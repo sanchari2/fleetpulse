@@ -1,0 +1,63 @@
+groups:
+  - name: fleetpulse
+    rules:
+      # The alert the simulator is built to trigger: batteries drain at about
+      # 0.7% per frame, so a drone starting near 90% crosses 20% in a couple of
+      # minutes. `for: 30s` keeps a single bad frame from paging anyone.
+      - alert: DroneLowBattery
+        expr: fleetpulse_drone_battery_pct < 20
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Drone {{ $labels.drone_id }} battery at {{ $value | printf \"%.1f\" }}%"
+          description: >-
+            {{ $labels.drone_id }} has reported below 20% for 30 seconds.
+            Recall it, or accept the risk of a forced landing.
+
+      - alert: DroneBatteryCritical
+        expr: fleetpulse_drone_battery_pct < 8
+        for: 10s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Drone {{ $labels.drone_id }} is about to lose power"
+          description: "Battery at {{ $value | printf \"%.1f\" }}%. Land it now."
+
+      - alert: FleetPulseDown
+        expr: up{job="fleetpulse"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "FleetPulse API is not scrapeable"
+          description: >-
+            Prometheus has failed to scrape {{ $labels.instance }} for a minute.
+            Check the pod or container, then the service and network policy.
+
+      - alert: IngestStalled
+        expr: rate(fleetpulse_telemetry_total[2m]) == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "No telemetry has been ingested for 2 minutes"
+          description: >-
+            The API is up but no frames are arriving. Either the fleet is not
+            flying or the simulator has stopped: check the client side before
+            restarting the API.
+
+      - alert: IngestLatencyHigh
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (rate(fleetpulse_ingest_seconds_bucket[5m]))
+          ) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p95 ingest latency is above 100ms"
+          description: >-
+            Ingest is slower than the frame rate the fleet produces. Check CPU
+            limits and the store's drone count against MAX_DRONES.

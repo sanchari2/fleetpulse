@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+build/
+dist/
+
+# Test and coverage artefacts
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Terraform: state contains resource ids and can contain secrets
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+crash.log
+terraform.tfvars
+*.auto.tfvars
+override.tf
+override.tf.json
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# OS and editors
+.DS_Store
+.idea/
+.vscode/
+
+# Rendered locally
+*.log

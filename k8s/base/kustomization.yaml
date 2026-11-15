@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: fleetpulse
+
+resources:
+  - deployment.yaml
+  - service.yaml
+  - networkpolicy.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: fleetpulse
+      app.kubernetes.io/part-of: fleetpulse
+    includeSelectors: true
+
+# Replace <your-github-username> with your GitHub user or organisation, or the pull will 401.
+images:
+  - name: ghcr.io/<your-github-username>/fleetpulse
+    newTag: latest

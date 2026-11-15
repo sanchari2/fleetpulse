@@ -1,0 +1,51 @@
+#!/bin/bash
+# Rendered by Terraform. Installs Docker, writes the deploy script, and runs it
+# once so the instance is serving before you look at it.
+#
+# The deploy script is the contract with CI: the pipeline passes an image
+# reference over SSM and nothing else, so the deploy logic lives on the box and
+# is identical whether a human or a workflow triggers it.
+set -euxo pipefail
+
+dnf install -y docker
+systemctl enable --now docker
+
+cat > /usr/local/bin/fleetpulse-deploy <<'DEPLOY'
+#!/bin/bash
+# Usage: fleetpulse-deploy ghcr.io/owner/fleetpulse:v0.1.0
+set -euo pipefail
+
+IMAGE="$1"
+PORT="$${FLEETPULSE_PORT:-${port}}"
+
+echo "deploying $${IMAGE} on port $${PORT}"
+docker pull "$${IMAGE}"
+
+# Recreate rather than restart: the image reference may point at a new digest.
+docker rm -f fleetpulse >/dev/null 2>&1 || true
+docker run -d \
+  --name fleetpulse \
+  --restart unless-stopped \
+  --read-only \
+  --tmpfs /tmp \
+  -p "$${PORT}:8000" \
+  --log-driver journald \
+  "$${IMAGE}"
+
+for _ in $(seq 1 30); do
+  if curl -fsS "http://127.0.0.1:$${PORT}/healthz" >/dev/null 2>&1; then
+    echo "healthy after $${_} attempts"
+    exit 0
+  fi
+  sleep 2
+done
+
+echo "health check never passed" >&2
+docker logs fleetpulse --tail 100 >&2 || true
+exit 1
+DEPLOY
+
+chmod 0755 /usr/local/bin/fleetpulse-deploy
+
+# First boot: bring the service up with whatever image Terraform was given.
+FLEETPULSE_PORT=${port} /usr/local/bin/fleetpulse-deploy "${image}"

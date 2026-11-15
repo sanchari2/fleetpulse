@@ -1,0 +1,75 @@
+name: fleetpulse
+
+# One command brings up the whole demo: the API, a Prometheus that scrapes it
+# and evaluates the DroneLowBattery rule, a Grafana with the dashboard already
+# provisioned, and a simulator that makes the batteries drain so the alert fires.
+
+services:
+  api:
+    build:
+      context: .
+      args:
+        APP_VERSION: local
+    image: fleetpulse:local
+    ports:
+      - "8000:8000"
+    environment:
+      LOW_BATTERY_PCT: "20"
+      MAX_DRONES: "500"
+      HISTORY_SIZE: "50"
+      LOG_LEVEL: info
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2).status == 200 else 1)"
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=6h
+      - --web.enable-lifecycle
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/rules:/etc/prometheus/rules:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+  simulator:
+    build:
+      context: .
+      dockerfile: simulator/Dockerfile
+    environment:
+      API_URL: http://api:8000
+      DRONES: "6"
+      INTERVAL_S: "2"
+      DRAIN_PER_FRAME: "0.7"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped

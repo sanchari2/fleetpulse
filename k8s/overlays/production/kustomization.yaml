@@ -1,0 +1,26 @@
+# Production shape: three replicas, an autoscaler, and a disruption budget that
+# keeps two pods serving during a node drain.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - hpa.yaml
+  - pdb.yaml
+
+# Pinned by the release workflow; never deploy `latest` to production.
+images:
+  - name: ghcr.io/sanchari2/fleetpulse
+    newTag: v0.1.0
+
+patches:
+  - target:
+      kind: Deployment
+      name: fleetpulse
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 100m
