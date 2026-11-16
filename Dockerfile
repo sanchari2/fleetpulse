@@ -35,6 +35,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     APP_VERSION=${APP_VERSION} \
     PORT=8000
 
+# The python:3.12-slim tag is rebuilt only when upstream publishes it, so its
+# Debian packages lag the point release. Pull the current security fixes in
+# here; without this the Trivy gate fails on packages Debian has already
+# patched (zlib1g was the first one to bite).
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+ && apt-get -y upgrade \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
 RUN groupadd --gid 10001 fleetpulse \
  && useradd --uid 10001 --gid 10001 --no-create-home --shell /usr/sbin/nologin fleetpulse
 
