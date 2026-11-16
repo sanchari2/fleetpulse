@@ -10,7 +10,7 @@ resources:
 
 # Pinned by the release workflow; never deploy `latest` to production.
 images:
-  - name: ghcr.io/sanchari2/fleetpulse
+  - name: ghcr.io/OWNER/fleetpulse
     newTag: v0.1.0
 
 patches:

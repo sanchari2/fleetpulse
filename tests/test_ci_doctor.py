@@ -81,6 +81,23 @@ def claude_refusal() -> FakeResponse:
     return FakeResponse(payload={"stop_reason": "refusal", "content": []})
 
 
+@pytest.fixture(autouse=True)
+def isolated_env(monkeypatch):
+    """GitHub Actions exports GITHUB_REPOSITORY and GITHUB_RUN_ID on every
+    runner, and the CLI uses both as option defaults. Clear the CI variables so
+    each test states its own inputs instead of inheriting the runner's."""
+    for name in (
+        "GITHUB_REPOSITORY",
+        "GITHUB_RUN_ID",
+        "GITHUB_TOKEN",
+        "PR_NUMBER",
+        "ANTHROPIC_API_KEY",
+        "CLAUDE_MODEL",
+        "CLAUDE_FALLBACK_MODELS",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+
 # -- log handling -------------------------------------------------------
 def test_tail_lines_keeps_the_end_and_marks_the_drop():
     text = "\n".join(f"line {i}" for i in range(1, 101))

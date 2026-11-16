@@ -85,7 +85,7 @@ everything. Current: 74 tests, 98% coverage of `src/fleetpulse`.
 
 ## Put it on GitHub
 
-1. Create a public repo `fleetpulse`, replace `<your-github-username>` in `Dockerfile` and `k8s/*.yaml` with your GitHub username, push.
+1. Create a public repo `fleetpulse`, replace `OWNER` in `Dockerfile` and `k8s/*.yaml` with your GitHub username, push.
 2. Commit with Conventional Commits (`feat:`, `fix:`). The first `feat:` on `main` releases `v0.1.0`.
 3. After the first push, open the `fleetpulse` package on GitHub → Package settings → make it **public** (so EC2 can pull it without credentials).
 4. **CI Doctor:** add repo secret `ANTHROPIC_API_KEY`. Break a test in a PR to see the comment it posts.

@@ -42,7 +42,7 @@ includes the environment name, so a job without it cannot assume the role.
 aws ssm send-command \
   --instance-ids "$EC2_INSTANCE_ID" \
   --document-name AWS-RunShellScript \
-  --parameters "commands=/usr/local/bin/fleetpulse-deploy ghcr.io/sanchari2/fleetpulse:v0.1.0"
+  --parameters "commands=/usr/local/bin/fleetpulse-deploy ghcr.io/OWNER/fleetpulse:v0.1.0"
 ```
 
 The script pulls, replaces the container, and polls `/healthz` for up to a

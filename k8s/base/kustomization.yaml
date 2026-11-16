@@ -14,7 +14,7 @@ labels:
       app.kubernetes.io/part-of: fleetpulse
     includeSelectors: true
 
-# Replace <your-github-username> with your GitHub user or organisation, or the pull will 401.
+# Replace OWNER with your GitHub user or organisation, or the pull will 401.
 images:
-  - name: ghcr.io/<your-github-username>/fleetpulse
+  - name: ghcr.io/OWNER/fleetpulse
     newTag: latest

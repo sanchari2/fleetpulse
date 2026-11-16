@@ -5,6 +5,9 @@
 set -uo pipefail
 
 SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/scripts/next_version.sh"
+
+# CI sets GITHUB_OUTPUT for the whole job; only the last check may write to it.
+unset GITHUB_OUTPUT
 FAILURES=0
 CHECKS=0
 

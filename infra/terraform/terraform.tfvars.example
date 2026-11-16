@@ -6,11 +6,11 @@ aws_region = "ap-south-1"
 # Your public IP, not a range. `curl -s https://checkip.amazonaws.com` gives it.
 admin_cidr = "203.0.113.4/32"
 
-github_org  = "<your-github-username>"
+github_org  = "OWNER"
 github_repo = "fleetpulse"
 
 # The image the instance boots with. CI replaces it on the first release.
-image = "ghcr.io/<your-github-username>/fleetpulse:latest"
+image = "ghcr.io/OWNER/fleetpulse:latest"
 
 # Graviton. Smaller than t4g.small is not available; larger is not needed.
 # instance_type = "t4g.small"

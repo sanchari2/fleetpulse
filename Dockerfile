@@ -21,9 +21,9 @@ ARG BUILD_DATE=unknown
 
 LABEL org.opencontainers.image.title="fleetpulse" \
       org.opencontainers.image.description="Telemetry service for a simulated drone fleet" \
-      org.opencontainers.image.source="https://github.com/<your-github-username>/fleetpulse" \
-      org.opencontainers.image.url="https://github.com/<your-github-username>/fleetpulse" \
-      org.opencontainers.image.documentation="https://github.com/<your-github-username>/fleetpulse#readme" \
+      org.opencontainers.image.source="https://github.com/OWNER/fleetpulse" \
+      org.opencontainers.image.url="https://github.com/OWNER/fleetpulse" \
+      org.opencontainers.image.documentation="https://github.com/OWNER/fleetpulse#readme" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.version="${APP_VERSION}" \
       org.opencontainers.image.revision="${VCS_REF}" \

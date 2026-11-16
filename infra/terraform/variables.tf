@@ -24,7 +24,7 @@ variable "instance_type" {
 variable "image" {
   description = "Full image reference to run, including the tag."
   type        = string
-  default     = "ghcr.io/<your-github-username>/fleetpulse:latest"
+  default     = "ghcr.io/OWNER/fleetpulse:latest"
 
   validation {
     condition     = can(regex("^[a-z0-9./:_-]+$", var.image))
