@@ -135,14 +135,36 @@ jobs:
             BUILD_DATE=${{ github.event.repository.updated_at }}
           cache-from: type=gha,scope=scan
 
+      # The Trivy marketplace action is a composite action that pulls in
+      # aquasecurity/setup-trivy by tag, and that inner ref has broken more than
+      # once. Install the binary directly instead: one pinned version, no
+      # transitive action resolution, nothing to break between runs.
+      - name: Install Trivy
+        env:
+          TRIVY_VERSION: v0.76.2
+        run: |
+          set -euo pipefail
+          VERSION="${TRIVY_VERSION#v}"
+          curl -sSfL -o trivy.tar.gz \
+            "https://github.com/aquasecurity/trivy/releases/download/${TRIVY_VERSION}/trivy_${VERSION}_Linux-64bit.tar.gz"
+          tar -xzf trivy.tar.gz trivy
+          sudo install -m 0755 trivy /usr/local/bin/trivy
+          trivy --version
+
       - name: Trivy gate
-        uses: aquasecurity/trivy-action@v0.28.0
-        with:
-          image-ref: fleetpulse:scan
-          format: table
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: "1"
+        run: |
+          set -euo pipefail
+          # Fails the job on a fixable HIGH or CRITICAL vulnerability in the
+          # image we are about to publish. --scanners vuln keeps secret and
+          # misconfig scanning out of an image gate.
+          trivy image \
+            --exit-code 1 \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --scanners vuln \
+            --no-progress \
+            --format table \
+            fleetpulse:scan
 
       - name: Smoke test the image we just built
         run: |
