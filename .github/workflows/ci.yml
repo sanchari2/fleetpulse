@@ -136,7 +136,7 @@ jobs:
           cache-from: type=gha,scope=scan
 
       - name: Trivy gate
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           image-ref: fleetpulse:scan
           format: table
