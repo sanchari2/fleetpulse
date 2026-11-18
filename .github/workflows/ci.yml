@@ -273,7 +273,15 @@ jobs:
   deploy:
     name: deploy to Graviton
     needs: [version, release]
-    if: needs.version.outputs.skip != 'true'
+    # Deploying needs an instance to deploy to. Until `terraform apply` has run
+    # and the three repository variables are set, skip instead of failing on a
+    # missing region: an unconfigured optional stage should not paint the repo
+    # red on every release.
+    if: >-
+      needs.version.outputs.skip != 'true' &&
+      vars.AWS_DEPLOY_ROLE_ARN != '' &&
+      vars.EC2_INSTANCE_ID != '' &&
+      vars.AWS_REGION != ''
     runs-on: ubuntu-latest
     # the environment holds the protection rules; the credentials come from OIDC
     environment: production
